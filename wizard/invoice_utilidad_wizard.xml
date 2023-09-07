@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-     <record id="cantu_invoice_utilidad_view" model="ir.ui.view">
+     <record id="cantu_invoice_utilidadventas_view" model="ir.ui.view">
         <field name="name">Utilidad</field>
-        <field name="model">xls.invoice.utilidad</field>
+        <field name="model">xls.invoice.utilidadven</field>
         <field name="arch" type="xml">
             <form string = "Utilidad"> 
                 <field name="no_resultado" invisible="1"/>
@@ -23,20 +23,24 @@
         </field>
     </record>
 
-    <record id="action_cantu_invoice_utilidad_menu" model="ir.actions.act_window">
+    <record id="action_cantu_invoice_utilidadventas_menu" model="ir.actions.act_window">
         <field name="name">Utilidad</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">xls.invoice.utilidad</field>
+        <field name="res_model">xls.invoice.utilidadven</field>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="cantu_invoice_utilidad_view"/>
+        <field name="view_id" ref="cantu_invoice_utilidadventas_view"/>
         <field name="target">new</field>
     </record>
 
-    <menuitem
+    <!--<menuitem
         id="menu_cantu_invoice_utilidad"
         name="Reporte de Utilidad"
         parent="account.menu_finance_reports"
         action="action_cantu_invoice_utilidad_menu"
         sequence="0"
-    />
+    />-->
+
+    <menuitem id="menu_reporte_ventas" name="Utilidad"  action="action_cantu_invoice_utilidadventas_menu"              
+    parent="sale.sale_menu_root" sequence="40"/>
+
 </odoo>

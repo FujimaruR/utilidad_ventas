@@ -20,22 +20,27 @@ class BinaryFacturas(http.Controller):
         invoices = Model.browse(invoice_ids)
         timestamp = int(time.mktime(datetime.now().timetuple()))   
         csvfile = open('%s%s.csv' % ('/tmp/invoices_', timestamp), 'w')
-        fieldnames = ['Producto', 'Lote', 'Descripcion', 'Cantidad', 'Entregado', 'Facturado', 'Unidad de medida', 'Precio unitario', 'Impuestos', 'Descuento', 'Subtotal']
+        fieldnames = ['Producto', 'Lote', 'Fecha', 'Cantidad', 'PrecioVenta', 'Costo', 'MontoUtilidad', 'Categoria', 'CategoriaPos']
         writer = csv.DictWriter(csvfile, quoting=csv.QUOTE_NONE, fieldnames=fieldnames)
         writer.writeheader()
 
         for inv in invoices:
+            precio_venta_con_impuestos = inv.price_unit * (1 + (inv.tax_id.amount / 100))
+            costo = 0.0
+            utilidadm = 0.0
+            sale_price = inv.price_unit * inv.product_uom_qty
+            discount = (sale_price * inv.discount) / 100
+            costo = inv.product_id.standard_price * inv.product_uom_qty
+            utilidadm = (sale_price - discount) - costo
             writer.writerow({'Producto': inv.product_id.name, 
-                            'Lote': inv.product_template_id, #.encode('ascii', 'ignore') or '',
-                            'Descripcion': inv.name, #.encode('ascii', 'ignore') or '',
+                            'Lote': inv.order_id.name, #.encode('ascii', 'ignore') or '',
+                            'Fecha': inv.order_id.date_order, #.encode('ascii', 'ignore') or '',
                             'Cantidad': inv.product_uom_qty, 
-                            'Entregado': inv.state,
-                            'Facturado': inv.order_partner_id.name,
-                            'Unidad de medida': inv.product_uom.name, #.encode('ascii', 'ignore') or '', 
-                            'Precio unitario': inv.price_unit, 
-                            'Impuestos': [(impuesto.name, impuesto.amount) for impuesto in inv.tax_id],
-                            'Descuento': inv.discount,
-                            'Subtotal': inv.price_subtotal,
+                            'Precio de venta': precio_venta_con_impuestos,
+                            'Costo': costo,
+                            'Monto de utilidad': utilidadm, #.encode('ascii', 'ignore') or '', 
+                            'Categoria': inv.product_template_id.categ_id, 
+                            'Categoria POS': inv.product_template_id.pos_categ_id,
                             })
 
 

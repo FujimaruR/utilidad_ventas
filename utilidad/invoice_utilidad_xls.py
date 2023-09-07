@@ -20,18 +20,23 @@ class InvoiceUtilidadXls(models.AbstractModel):
         receipt_ids = self.env['sale.order.line'].search(domain)
 
         for line in receipt_ids:
+            precio_venta_con_impuestos = line.price_unit * (1 + (line.tax_id.amount / 100))
+            costo = 0.0
+            utilidadm = 0.0
+            sale_price = line.price_unit * line.product_uom_qty
+            discount = (sale_price * line.discount) / 100
+            costo = line.product_id.standard_price * line.product_uom_qty
+            utilidadm = (sale_price - discount) - costo
             vals = {
                 'Producto': line.product_id.name,
-                'Lote': line.product_template_id.name,
-                'Descripcion': line.name,
+                'Lote': line.order_id.name,
+                'Fecha': line.order_id.date_order,
                 'Cantidad': line.product_uom_qty,
-                'Entregado': line.state,
-                'Facturado': line.order_partner_id.name,
-                'UnidadDemedida': line.product_uom.name,
-                'PrecioUnitario': line.price_unit,
-                'Impuestos': [(impuesto.name, impuesto.amount) for impuesto in line.tax_id],
-                'Descuento': line.discount,
-                'Subtotal': line.price_subtotal,
+                'PrecioVenta': precio_venta_con_impuestos,
+                'Costo': costo,
+                'MontoUtilidad': utilidadm,
+                'Categoria': line.product_template_id.categ_id.name,
+                'CategoriaPos': line.product_template_id.pos_categ_id.name,
             }
             lines.append(vals)
 
@@ -44,6 +49,12 @@ class InvoiceUtilidadXls(models.AbstractModel):
             bold = workbook.add_format({'bold': True, 'align': 'center'})
             text = workbook.add_format({'font_size': 12, 'align': 'center'})
 
+            worksheet.merge_range('A1:B1', 'Reporte de utilidad por producto', bold)
+            worksheet.set_row(0, 30)  
+            date_range = f'De {obj.fecha_ini.strftime("%d/%m/%Y")} a {obj.fecha_fin.strftime("%d/%m/%Y")}'
+            worksheet.merge_range('A2:B2', date_range, text)
+            worksheet.set_row(1, 20)
+
             worksheet.set_column(0, 0, 25)
             worksheet.set_column(1, 2, 25)
             worksheet.set_column(3, 3, 25)
@@ -52,33 +63,28 @@ class InvoiceUtilidadXls(models.AbstractModel):
             worksheet.set_column(6, 6, 25)
             worksheet.set_column(7, 7, 25)
             worksheet.set_column(8, 8, 25)
-            worksheet.set_column(9, 9, 25)
-            worksheet.set_column(10, 10, 25)
 
-            worksheet.write('A1', 'Producto', bold)
-            worksheet.write('B1', 'Lote', bold)
-            worksheet.write('C1', 'Descripcion', bold)
-            worksheet.write('D1', 'Cantidad', bold)
-            worksheet.write('E1', 'Entregado', bold)
-            worksheet.write('F1', 'Facturado', bold)
-            worksheet.write('G1', 'Unidad de medida', bold)
-            worksheet.write('H1', 'Precio unitario', bold)
-            worksheet.write('I1', 'Impuestos', bold)
-            worksheet.write('J1', 'Descuento', bold)
-            worksheet.write('K1', 'Subtotal', bold)
-            row = 1
+            worksheet.write('A4', 'Producto', bold)
+            worksheet.write('B4', 'Lote', bold)
+            worksheet.write('C4', 'Fecha', bold)
+            worksheet.write('D4', 'Cantidad', bold)
+            worksheet.write('E4', 'Precio de venta', bold)
+            worksheet.write('F4', 'Costo', bold)
+            worksheet.write('G4', 'Monto de utilidad', bold)
+            worksheet.write('H4', 'Categoria', bold)
+            worksheet.write('I4', 'Categoria POS', bold)
+            row = 4
             col = 0
             for res in lines:
                 worksheet.write(row, col, res['Producto'], text)
                 worksheet.write(row, col + 1, res['Lote'], text)
-                worksheet.write(row, col + 2, res['Descripcion'], text)
+                fecha = res['Fecha'].strftime('%d/%m/%Y')
+                worksheet.write(row, col + 2, fecha, text)
                 worksheet.write(row, col + 3, res['Cantidad'], text)
-                worksheet.write(row, col + 4, res['Entregado'], text)
-                worksheet.write(row, col + 5, res['Facturado'], text)
-                worksheet.write(row, col + 6, res['UnidadDemedida'], text)
-                worksheet.write(row, col + 7, str(self.env.user.company_id.currency_id.symbol) + str(res['PrecioUnitario']), text)
-                impuestos_str = ', '.join([f'{nombre}: {monto}' for nombre, monto in res['Impuestos']])
-                worksheet.write(row, col + 8, impuestos_str, text)
-                worksheet.write(row, col + 9, res['Descuento'], text)
-                worksheet.write(row, col + 10, str(self.env.user.company_id.currency_id.symbol) + str(res['Subtotal']), text)
+                worksheet.write(row, col + 4, str(self.env.user.company_id.currency_id.symbol) + str(res['PrecioVenta']), text)
+                worksheet.write(row, col + 5, str(self.env.user.company_id.currency_id.symbol) + str(res['Costo']), text)
+                worksheet.write(row, col + 6, str(self.env.user.company_id.currency_id.symbol) + str(res['MontoUtilidad']), text)
+                worksheet.write(row, col + 7, res['Categoria'], text)
+                worksheet.write(row, col + 8, res['CategoriaPos'], text)
+                
                 row = row + 1

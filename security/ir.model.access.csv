@@ -1,2 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_xls_invoice_utilidad,xls.invoice.utilidad,utilidad_ventas.model_xls_invoice_utilidad,,1,1,1,1
+access_xls_invoice_utilidadven,xls.invoice.utilidadven,utilidad_ventas.model_xls_invoice_utilidadven,,1,1,1,1
