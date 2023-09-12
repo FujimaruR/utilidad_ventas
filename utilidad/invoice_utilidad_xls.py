@@ -33,8 +33,8 @@ class InvoiceUtilidadXls(models.AbstractModel):
                 'Fecha': line.order_id.date_order,
                 'Cantidad': line.product_uom_qty,
                 'PrecioVenta': precio_venta_con_impuestos,
-                'Costo': costo,
-                'MontoUtilidad': utilidadm,
+                'Costo': line.costo,
+                'MontoUtilidad': line.margen,
                 'Categoria': line.product_template_id.categ_id.name,
                 'CategoriaPos': line.product_template_id.pos_categ_id.name,
             }
@@ -48,6 +48,7 @@ class InvoiceUtilidadXls(models.AbstractModel):
             worksheet = workbook.add_worksheet('Reporte de utilidad')
             bold = workbook.add_format({'bold': True, 'align': 'center'})
             text = workbook.add_format({'font_size': 12, 'align': 'center'})
+            money_format = workbook.add_format({'num_format': '$#,##0.00', 'align': 'center'})
 
             worksheet.merge_range('A1:B1', 'Reporte de utilidad por producto', bold)
             worksheet.set_row(0, 30)  
@@ -65,7 +66,7 @@ class InvoiceUtilidadXls(models.AbstractModel):
             worksheet.set_column(8, 8, 25)
 
             worksheet.write('A4', 'Producto', bold)
-            worksheet.write('B4', 'Lote', bold)
+            worksheet.write('B4', 'Numero de recibo', bold)
             worksheet.write('C4', 'Fecha', bold)
             worksheet.write('D4', 'Cantidad', bold)
             worksheet.write('E4', 'Precio de venta', bold)
@@ -80,10 +81,10 @@ class InvoiceUtilidadXls(models.AbstractModel):
                 worksheet.write(row, col + 1, res['Lote'], text)
                 fecha = res['Fecha'].strftime('%d/%m/%Y')
                 worksheet.write(row, col + 2, fecha, text)
-                worksheet.write(row, col + 3, res['Cantidad'], text)
-                worksheet.write(row, col + 4, str(self.env.user.company_id.currency_id.symbol) + str(res['PrecioVenta']), text)
-                worksheet.write(row, col + 5, str(self.env.user.company_id.currency_id.symbol) + str(res['Costo']), text)
-                worksheet.write(row, col + 6, str(self.env.user.company_id.currency_id.symbol) + str(res['MontoUtilidad']), text)
+                worksheet.write(row, col + 3, float(res['Cantidad']), text)
+                worksheet.write(row, col + 4, float(res['PrecioVenta']), money_format)
+                worksheet.write(row, col + 5, float(res['Costo']), money_format)
+                worksheet.write(row, col + 6, float(res['MontoUtilidad']), money_format)
                 worksheet.write(row, col + 7, res['Categoria'], text)
                 worksheet.write(row, col + 8, res['CategoriaPos'], text)
                 

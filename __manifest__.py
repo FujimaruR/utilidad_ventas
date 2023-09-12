@@ -13,6 +13,7 @@
         'security/ir.model.access.csv',
         'wizard/invoice_utilidad_wizard.xml',
         'views/invoice_utilidad_id.xml',
+        'views/sale_view.xml',
     ],
     'application': False,
     'installable': True,
