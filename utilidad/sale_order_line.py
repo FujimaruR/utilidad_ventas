@@ -12,7 +12,7 @@ class SaleOrder(models.Model):
         for record in self:
             if record.order_line:
                 for line in record.order_line:
-                    line.costo = line.product_id.standard_price
+                    line.costo = line.product_id.standard_price * line.qty
                     precio_venta_con_impuestos = line.price_unit * (1 + (line.tax_id.amount / 100))
                     costo = 0.0
                     utilidadm = 0.0
